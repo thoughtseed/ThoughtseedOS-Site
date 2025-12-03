@@ -96,9 +96,9 @@ function App() {
           <ProjectShowcase projects={PROJECTS} />
         </div>
 
-        <div className="bg-neo-lime text-black py-4 border-y-4 border-black relative z-10">
-          <Marquee items={['React', 'TypeScript', 'Node.js', 'Python', 'Solidity', 'AWS', 'Design', 'AI']} direction="right" speed="fast" className="text-black" />
-        </div>
+        {/* <div className="bg-neo-lime text-black py-4 border-y-4 border-black relative z-10">
+          <Marquee items={['React', 'Node.js', 'Python', 'Solidity', 'AWS', 'Design', 'AI']} direction="right" speed="fast" className="text-black" />
+        </div> */}
 
         {/* TUYA PARTNER SECTION - IMMERSIVE 3D */}
         <TuyaSection />

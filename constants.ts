@@ -164,7 +164,7 @@ export const PROJECTS: Project[] = [
       "description": "An AI Based app to calculate the most optimal photovoltaic system for your home.",
       "icon": "/icons/sounds.png",
       "tags": ["AI", "Energy", "Photovoltaic", "Mobile App"],
-      "screenshots": ["/assets/screenshots/UVYield1.png"],
+      "screenshots": ["/assets/screenshots/UVyield1.png"],
       "tech": ["Python", "ReactJS", "FastAPI"],
       "url": null,
       "client": "N/A",

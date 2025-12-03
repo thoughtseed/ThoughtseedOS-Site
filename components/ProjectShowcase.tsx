@@ -1,11 +1,90 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
-import { motion, useSpring, useTransform, useMotionValue, AnimatePresence } from 'framer-motion';
+import { motion, useSpring, useTransform, useMotionValue, AnimatePresence, useInView } from 'framer-motion';
 import { Project } from '../types';
 import { ArrowUpRight, X, Calendar, Code, User, Zap, Globe, Cpu, Layers } from 'lucide-react';
 
 interface ProjectShowcaseProps {
   projects: Project[];
 }
+
+// --- MOBILE DETECTION (SSR-safe with initial check) ---
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768 || 'ontouchstart' in window;
+  });
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+    };
+    
+    checkMobile();
+    const debouncedCheck = debounce(checkMobile, 150);
+    window.addEventListener('resize', debouncedCheck);
+    return () => window.removeEventListener('resize', debouncedCheck);
+  }, []);
+  
+  return isMobile;
+};
+
+// Simple debounce helper
+const debounce = <T extends (...args: unknown[]) => void>(fn: T, ms: number) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), ms);
+  };
+};
+
+// --- LAZY IMAGE COMPONENT ---
+const LazyImage: React.FC<{
+  src: string;
+  alt: string;
+  className?: string;
+  onLoad?: () => void;
+}> = ({ src, alt, className, onLoad }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+    
+    return () => observer.disconnect();
+  }, []);
+  
+  return (
+    <div ref={imgRef} className={`relative ${className}`}>
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-gray-800 animate-pulse" />
+      )}
+      {isInView && (
+        <img
+          src={src}
+          alt={alt}
+          className={`${className} transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+          onLoad={() => {
+            setIsLoaded(true);
+            onLoad?.();
+          }}
+        />
+      )}
+    </div>
+  );
+};
 
 // --- MATH HELPERS ---
 
@@ -29,7 +108,8 @@ const ProjectNode: React.FC<{
   rotationX: any;
   rotationY: any;
   onClick: () => void;
-}> = ({ project, position, rotationX, rotationY, onClick }) => {
+  isMobile: boolean;
+}> = ({ project, position, rotationX, rotationY, onClick, isMobile }) => {
   const [isHovered, setIsHovered] = useState(false);
   
   // Inverse rotation to billboard the card (keep it facing screen)
@@ -50,11 +130,12 @@ const ProjectNode: React.FC<{
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className="relative group cursor-pointer"
-        whileHover={{ scale: 1.1, zIndex: 9999 }}
+        whileHover={!isMobile ? { scale: 1.1, zIndex: 9999 } : {}}
+        whileTap={isMobile ? { scale: 0.95 } : {}}
         initial={{ opacity: 0, scale: 0 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.8, delay: Math.random() * 0.5 }}
+        transition={{ duration: isMobile ? 0.3 : 0.8, delay: isMobile ? 0 : Math.random() * 0.5 }}
       >
         {/* Connection Line Visual (pointing to center) - Only visible on hover or if featured */}
         <div className={`absolute top-1/2 left-1/2 w-[2px] bg-gradient-to-t from-transparent via-neo-lime/50 to-transparent origin-bottom -z-10 transition-all duration-500 ${isHovered || project.featured ? 'h-[150px] opacity-100' : 'h-0 opacity-0'}`} style={{ transform: 'translateX(-50%) rotate(180deg)' }} />
@@ -74,9 +155,11 @@ const ProjectNode: React.FC<{
             {/* Image Area */}
             <div className="h-1/2 w-full overflow-hidden relative">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 z-10" />
-                <img 
-                    src={project.screenshots && project.screenshots.length > 0 ? project.screenshots[0] : `https://picsum.photos/seed/${project.id}/400/300`} 
-                    alt={project.name} 
+                <LazyImage 
+                    src={project.screenshots && project.screenshots.length > 0 
+                        ? project.screenshots[0] 
+                        : `https://picsum.photos/seed/${project.id}/${isMobile ? '280/200' : '400/300'}`}
+                    alt={project.name}
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110"
                 />
                 
@@ -142,8 +225,12 @@ const ProjectNode: React.FC<{
 
 const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ projects }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isReducedMotion, setIsReducedMotion] = useState(false);
+  const isMobile = useIsMobile();
+  const sceneReady = useInView(sectionRef, { margin: '-10% 0px', once: true });
 
   // Rotation State
   const rotateX = useMotionValue(-10);
@@ -154,18 +241,30 @@ const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ projects }) => {
   const smoothRotateX = useSpring(rotateX, springConfig);
   const smoothRotateY = useSpring(rotateY, springConfig);
 
-  // Auto-rotation idle loop
+  // Check for reduced motion preference
   useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setIsReducedMotion(mediaQuery.matches);
+    
+    const handleChange = (e: MediaQueryListEvent) => setIsReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  // Auto-rotation idle loop - disabled when not in view or reduced motion
+  useEffect(() => {
+    if (!sceneReady || isReducedMotion) return;
+    
     let animationFrame: number;
     const autoRotate = () => {
       if (!isDragging && !selectedProject) {
-        rotateY.set(rotateY.get() + 0.08);
+        rotateY.set(rotateY.get() + (isMobile ? 0.05 : 0.08));
       }
       animationFrame = requestAnimationFrame(autoRotate);
     };
     autoRotate();
     return () => cancelAnimationFrame(animationFrame);
-  }, [isDragging, selectedProject]);
+  }, [isDragging, selectedProject, isMobile, isReducedMotion, sceneReady]);
 
   // Drag Handlers
   const handlePointerDown = () => setIsDragging(true);
@@ -177,39 +276,43 @@ const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ projects }) => {
     }
   };
 
-  // Node Calculation
+  const displayedProjects = projects;
+
+  // Node Calculation - simplified for mobile
   const projectNodes = useMemo(() => {
-    const featured = projects.filter(p => p.featured);
-    const regular = projects.filter(p => !p.featured);
+    if (!sceneReady) return [];
+    
+    const featured = displayedProjects.filter(p => p.featured);
+    const regular = displayedProjects.filter(p => !p.featured);
     
     // Core nodes (Featured) - Inner Sphere
     const coreNodes = featured.map((p, i) => ({
       project: p,
-      // Radius 320-400 for core
-      pos: getPosition(i, featured.length, 380) 
+      // Radius scaled for device
+      pos: getPosition(i, featured.length, isMobile ? 360 : 520) 
     }));
 
     // Cloud nodes (Regular) - Outer Sphere
     const cloudNodes = regular.map((p, i) => ({
         project: p,
-        // Radius 600-700 for outer cloud
-        pos: getPosition(i, regular.length, 650) 
+        // Radius scaled for device
+        pos: getPosition(i, regular.length, isMobile ? 600 : 900) 
     }));
 
     // Combine and add randomization
     return [...coreNodes, ...cloudNodes].map(node => ({
         ...node,
         pos: {
-            x: node.pos.x + (Math.random() * 100 - 50),
-            y: node.pos.y + (Math.random() * 100 - 50),
-            z: node.pos.z + (Math.random() * 100 - 50)
+            x: node.pos.x + (Math.random() * 120 - 60),
+            y: node.pos.y + (Math.random() * 120 - 60),
+            z: node.pos.z + (Math.random() * 120 - 60)
         }
     }));
-  }, [projects]);
+  }, [projects, isMobile, sceneReady]);
 
 
   return (
-    <section className="relative h-[110vh] bg-transparent overflow-hidden flex flex-col items-center justify-center">
+    <section ref={sectionRef} className={`relative ${isMobile ? 'min-h-[120vh]' : 'min-h-[160vh]'} bg-transparent overflow-hidden flex flex-col items-center justify-center py-16`}>
       
       {/* Intro Text / HUD */}
       <div className="absolute top-24 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-none mix-blend-difference">
@@ -228,7 +331,7 @@ const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ projects }) => {
       <div className="absolute bottom-10 left-10 z-20 pointer-events-none hidden md:block">
         <div className="text-white/30 font-mono text-[10px] space-y-1">
             <p>ROTATION: {Math.round(rotateY.get())}°</p>
-            <p>NODES: {projects.length}</p>
+            <p>NODES: {displayedProjects.length}</p>
             <p>STATUS: ONLINE</p>
         </div>
       </div>
@@ -236,7 +339,7 @@ const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ projects }) => {
       {/* 3D INTERACTIVE SCENE */}
       <div 
         ref={containerRef}
-        className="relative w-full h-full cursor-grab active:cursor-grabbing perspective-1000 flex items-center justify-center"
+        className={`relative w-full h-full cursor-grab active:cursor-grabbing perspective-1000 flex items-center justify-center touch-pan-y`}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
@@ -277,6 +380,7 @@ const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ projects }) => {
                     rotationX={smoothRotateX}
                     rotationY={smoothRotateY}
                     onClick={() => setSelectedProject(node.project)}
+                    isMobile={isMobile}
                 />
             ))}
 
@@ -316,9 +420,9 @@ const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ projects }) => {
                         <div className="w-full h-[35vh] md:h-[45vh] relative bg-black flex-shrink-0">
                             <div className="absolute inset-0 z-10 bg-gradient-to-t from-black via-transparent to-transparent" />
                             
-                            <img 
-                                src={selectedProject.screenshots && selectedProject.screenshots.length > 0 ? selectedProject.screenshots[0] : `https://picsum.photos/seed/${selectedProject.id}/1200/600`} 
-                                alt={selectedProject.name} 
+                            <LazyImage 
+                                src={selectedProject.screenshots && selectedProject.screenshots.length > 0 ? selectedProject.screenshots[0] : `https://picsum.photos/seed/${selectedProject.id}/1200/600`}
+                                alt={selectedProject.name}
                                 className="w-full h-full object-cover object-top opacity-90"
                             />
 
