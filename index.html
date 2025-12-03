@@ -2,54 +2,164 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <meta name="apple-mobile-web-app-title" content="ryOS" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
-    />
-    <meta
-      name="description"
-      content="A web-based OS experience, made with Cursor"
-    />
-    <meta name="theme-color" content="#000000" />
-    <meta http-equiv="Permissions-Policy" content="camera=(self)" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thoughtseed | Digital Wilderness</title>
+    <meta name="description" content="We plant ideas. They grow wild.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Space Mono (Tech), Syne (Creative/Bold), Orbitron (Futuristic) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 
-    <!-- Cache control -->
-    <meta http-equiv="Cache-Control" content="max-age=86400" />
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              mono: ['"Space Mono"', 'monospace'],
+              sans: ['"Syne"', 'sans-serif'],
+              display: ['"Orbitron"', 'sans-serif'],
+            },
+            colors: {
+              'cosmic-dark': '#030014',
+              'cosmic-light': '#FDFDFF',
+              'cosmic-card': 'rgba(255, 255, 255, 0.03)',
+              'cosmic-card-hover': 'rgba(255, 255, 255, 0.08)',
+              'neo-black': '#121212',
+              'neo-white': '#fdfdfd',
+              'neo-lime': '#ccff00',
+              'neo-pink': '#ff00ff',
+              'neo-cyan': '#00ffff',
+              'neo-purple': '#b026ff',
+            },
+            boxShadow: {
+              'glow': '0 0 20px rgba(176, 38, 255, 0.5)',
+              'glow-lg': '0 0 40px rgba(0, 255, 255, 0.4)',
+              'neo': '5px 5px 0px 0px rgba(0,0,0,1)',
+              'neo-lg': '8px 8px 0px 0px rgba(0,0,0,1)',
+            },
+            backgroundImage: {
+              'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+              'cosmic-gradient': 'linear-gradient(to right bottom, #4338ca, #c026d3, #0891b2)',
+            },
+            animation: {
+              'marquee': 'marquee 40s linear infinite',
+              'marquee-reverse': 'marqueeReverse 40s linear infinite',
+              'blob': 'blob 10s infinite',
+              'spin-slow': 'spin 15s linear infinite',
+              'aurora': 'aurora 20s ease-in-out infinite alternate',
+              'text': 'textPan 3s ease infinite',
+              'glitch': 'glitch 1s linear infinite',
+              'scan': 'scan 4s linear infinite',
+            },
+            keyframes: {
+              marquee: {
+                '0%': { transform: 'translateX(0%)' },
+                '100%': { transform: 'translateX(-100%)' },
+              },
+              marqueeReverse: {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(0%)' },
+              },
+              blob: {
+                '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                '33%': { transform: 'translate(30px, -50px) scale(1.2)' },
+                '66%': { transform: 'translate(-20px, 20px) scale(0.8)' },
+                '100%': { transform: 'translate(0px, 0px) scale(1)' },
+              },
+              aurora: {
+                '0%': { transform: 'translate(0%, 0%) scale(1) rotate(0deg)', filter: 'hue-rotate(0deg)' },
+                '50%': { transform: 'translate(-5%, 10%) scale(1.1) rotate(2deg)', filter: 'hue-rotate(30deg)' },
+                '100%': { transform: 'translate(5%, -5%) scale(1.05) rotate(-2deg)', filter: 'hue-rotate(60deg)' },
+              },
+              textPan: {
+                '0%, 100%': {
+                  'background-size': '200% 200%',
+                  'background-position': 'left center',
+                },
+                '50%': {
+                  'background-size': '200% 200%',
+                  'background-position': 'right center',
+                },
+              },
+              glitch: {
+                '2%, 64%': { transform: 'translate(2px,0) skew(0deg)' },
+                '4%, 60%': { transform: 'translate(-2px,0) skew(0deg)' },
+                '62%': { transform: 'translate(0,0) skew(5deg)' },
+              },
+              scan: {
+                '0%': { backgroundPosition: '0 -100vh' },
+                '100%': { backgroundPosition: '0 100vh' }
+              }
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        overflow-x: hidden;
+        background-color: #030014; /* Default dark */
+      }
+      /* Ensure perspective utilities work */
+      .perspective-1000 { perspective: 1000px; }
+      .perspective-500 { perspective: 500px; }
+      
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #030014;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #ccff00;
+      }
+      
+      .glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://thoughtseed.space/" />
-    <meta property="og:title" content="ThoughtseedOS" />
-    <meta
-      property="og:description"
-      content="A web-based OS experience of Thoughtseed website"
-    />
-    <meta property="og:image" content="https://thoughtseed.space/icons/mac-512.png" />
-    <meta property="og:site_name" content="ThoughtseedOS" />
-
-    <!-- Twitter Card -->
-    <meta property="twitter:card" content="summary" />
-    <meta property="twitter:title" content="ThoughtseedOS" />
-    <meta
-      property="twitter:description"
-      content="A web-based OS experience of Thoughtseed website"
-    />
-    <meta
-      property="twitter:image"
-      content="https://thoughtseed.space/icons/mac-512.png"
-    />
-
-    <title>ThoughtseedOS</title>
-  </head>
-  <body style="background-color: black">
+      .text-stroke {
+        -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+        color: transparent;
+      }
+      .text-stroke-black {
+        -webkit-text-stroke: 1px #000;
+        color: transparent;
+      }
+      .text-stroke-white {
+        -webkit-text-stroke: 1px #fff;
+        color: transparent;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.24",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <script type="module" src="/index.tsx"></script>
+</body>
 </html>
