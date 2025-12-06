@@ -142,7 +142,7 @@ const ProjectNode: React.FC<{
 
         {/* The Node Card */}
         <div className={`
-            relative w-40 h-56 md:w-56 md:h-72 rounded-xl border transition-all duration-500 overflow-hidden flex flex-col
+            relative w-24 h-32 md:w-56 md:h-72 rounded-xl border transition-all duration-500 overflow-hidden flex flex-col
             ${isHovered
             ? 'bg-black/90 border-neo-lime shadow-[0_0_40px_rgba(204,255,0,0.3)]'
             : project.featured
@@ -165,29 +165,30 @@ const ProjectNode: React.FC<{
 
             {project.featured && (
               <div className="absolute top-2 right-2 z-20">
-                <div className="w-2 h-2 bg-neo-lime rounded-full shadow-[0_0_5px_#ccff00] animate-pulse" />
+                <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-neo-lime rounded-full shadow-[0_0_5px_#ccff00] animate-pulse" />
               </div>
             )}
 
             {/* Icon Emblem */}
-            <div className="absolute bottom-2 left-2 z-20 p-2 bg-black/50 border border-white/20 rounded-lg backdrop-blur-md">
-              <Globe size={14} className="text-white" />
+            <div className="absolute bottom-2 left-2 z-20 p-1 md:p-2 bg-black/50 border border-white/20 rounded-lg backdrop-blur-md">
+              <Globe size={10} className="text-white md:hidden" />
+              <Globe size={14} className="text-white hidden md:block" />
             </div>
           </div>
 
           {/* Info Area */}
-          <div className="p-3 md:p-4 flex flex-col justify-between flex-grow relative z-10">
+          <div className="p-2 md:p-4 flex flex-col justify-between flex-grow relative z-10">
             <div>
-              <h3 className="text-white font-display font-bold text-sm md:text-base uppercase leading-tight mb-2 group-hover:text-neo-lime transition-colors line-clamp-2">
+              <h3 className="text-white font-display font-bold text-[9px] md:text-base uppercase leading-tight mb-1 md:mb-2 group-hover:text-neo-lime transition-colors line-clamp-2">
                 {project.name}
               </h3>
               <div className="w-8 h-[1px] bg-white/20 mb-2 group-hover:w-full group-hover:bg-neo-lime transition-all duration-500" />
-              <p className="text-[10px] md:text-xs text-gray-400 line-clamp-2 font-mono">
+              <p className="hidden md:block text-[10px] md:text-xs text-gray-400 line-clamp-2 font-mono">
                 {project.description}
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-1 mt-2">
+            <div className="hidden md:flex flex-wrap gap-1 mt-2">
               {project.tags.slice(0, 2).map((t, i) => (
                 <span key={i} className="text-[8px] md:text-[10px] border border-white/10 bg-white/5 text-gray-300 px-1.5 py-0.5 rounded font-mono">
                   {t}
@@ -289,14 +290,14 @@ const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ projects }) => {
     const coreNodes = featured.map((p, i) => ({
       project: p,
       // Radius scaled for device
-      pos: getPosition(i, featured.length, isMobile ? 360 : 520)
+      pos: getPosition(i, featured.length, isMobile ? 220 : 520)
     }));
 
     // Cloud nodes (Regular) - Outer Sphere
     const cloudNodes = regular.map((p, i) => ({
       project: p,
       // Radius scaled for device
-      pos: getPosition(i, regular.length, isMobile ? 600 : 900)
+      pos: getPosition(i, regular.length, isMobile ? 380 : 900)
     }));
 
     // Combine and add randomization
