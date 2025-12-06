@@ -43,12 +43,15 @@ const LazyImage: React.FC<{
   alt: string;
   className?: string;
   onLoad?: () => void;
-}> = ({ src, alt, className, onLoad }) => {
+  eagerLoad?: boolean;
+}> = ({ src, alt, className, onLoad, eagerLoad = false }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(false);
+  const [isInView, setIsInView] = useState(eagerLoad);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
+    if (eagerLoad) return; // Skip observer if eager loading
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -64,7 +67,7 @@ const LazyImage: React.FC<{
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [eagerLoad]);
 
   return (
     <div ref={imgRef} className={`relative ${className}`}>
@@ -132,10 +135,11 @@ const ProjectNode: React.FC<{
         className="relative group cursor-pointer"
         whileHover={!isMobile ? { scale: 1.1, zIndex: 9999 } : {}}
         whileTap={isMobile ? { scale: 0.95 } : {}}
-        initial={{ opacity: 0, scale: 0 }}
-        whileInView={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={isMobile ? { opacity: 1, scale: 1 } : undefined}
+        whileInView={!isMobile ? { opacity: 1, scale: 1 } : undefined}
         viewport={{ once: true }}
-        transition={{ duration: isMobile ? 0.3 : 0.8, delay: isMobile ? 0 : Math.random() * 0.5 }}
+        transition={{ duration: 0.3 }}
       >
         {/* Connection Line Visual (pointing to center) - Only visible on hover or if featured */}
         <div className={`absolute top-1/2 left-1/2 w-[2px] bg-gradient-to-t from-transparent via-neo-lime/50 to-transparent origin-bottom -z-10 transition-all duration-500 ${isHovered || project.featured ? 'h-[150px] opacity-100' : 'h-0 opacity-0'}`} style={{ transform: 'translateX(-50%) rotate(180deg)' }} />
@@ -161,6 +165,7 @@ const ProjectNode: React.FC<{
                 : `https://picsum.photos/seed/${project.id}/${isMobile ? '280/200' : '400/300'}`}
               alt={project.name}
               className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110"
+              eagerLoad={isMobile}
             />
 
             {project.featured && (
@@ -182,15 +187,15 @@ const ProjectNode: React.FC<{
               <h3 className="text-white font-display font-bold text-[9px] md:text-base uppercase leading-tight mb-1 md:mb-2 group-hover:text-neo-lime transition-colors line-clamp-2">
                 {project.name}
               </h3>
-              <div className="w-8 h-[1px] bg-white/20 mb-2 group-hover:w-full group-hover:bg-neo-lime transition-all duration-500" />
-              <p className="hidden md:block text-[10px] md:text-xs text-gray-400 line-clamp-2 font-mono">
+              <div className="w-4 md:w-8 h-[1px] bg-white/20 mb-1 md:mb-2 group-hover:w-full group-hover:bg-neo-lime transition-all duration-500" />
+              <p className="text-[6px] md:text-xs text-gray-400 line-clamp-1 md:line-clamp-2 font-mono">
                 {project.description}
               </p>
             </div>
 
-            <div className="hidden md:flex flex-wrap gap-1 mt-2">
-              {project.tags.slice(0, 2).map((t, i) => (
-                <span key={i} className="text-[8px] md:text-[10px] border border-white/10 bg-white/5 text-gray-300 px-1.5 py-0.5 rounded font-mono">
+            <div className="flex flex-wrap gap-0.5 md:gap-1 mt-1 md:mt-2">
+              {project.tags.slice(0, isMobile ? 1 : 2).map((t, i) => (
+                <span key={i} className="text-[5px] md:text-[10px] border border-white/10 bg-white/5 text-gray-300 px-1 md:px-1.5 py-0.5 rounded font-mono">
                   {t}
                 </span>
               ))}
@@ -290,23 +295,23 @@ const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ projects }) => {
     const coreNodes = featured.map((p, i) => ({
       project: p,
       // Radius scaled for device
-      pos: getPosition(i, featured.length, isMobile ? 220 : 520)
+      pos: getPosition(i, featured.length, isMobile ? 180 : 520)
     }));
 
     // Cloud nodes (Regular) - Outer Sphere
     const cloudNodes = regular.map((p, i) => ({
       project: p,
       // Radius scaled for device
-      pos: getPosition(i, regular.length, isMobile ? 380 : 900)
+      pos: getPosition(i, regular.length, isMobile ? 280 : 900)
     }));
 
     // Combine and add randomization
     return [...coreNodes, ...cloudNodes].map(node => ({
       ...node,
       pos: {
-        x: node.pos.x + (Math.random() * 120 - 60),
-        y: node.pos.y + (Math.random() * 120 - 60),
-        z: node.pos.z + (Math.random() * 120 - 60)
+        x: node.pos.x + (Math.random() * (isMobile ? 60 : 120) - (isMobile ? 30 : 60)),
+        y: node.pos.y + (Math.random() * (isMobile ? 60 : 120) - (isMobile ? 30 : 60)),
+        z: node.pos.z + (Math.random() * (isMobile ? 60 : 120) - (isMobile ? 30 : 60))
       }
     }));
   }, [projects, isMobile, sceneReady]);
