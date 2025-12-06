@@ -171,7 +171,7 @@ const HeroSection: React.FC = () => {
       {/* 2. Main 3D Container */}
       <motion.div
         style={{ rotateX, rotateY, y: yText, opacity: opacityText, transformStyle: "preserve-3d" }}
-        className="relative z-10 container mx-auto px-4 flex flex-col items-center text-center select-none"
+        className="relative z-10 container mx-auto px-6 md:px-4 pt-20 flex flex-col items-center text-center select-none"
       >
 
         {/* Floating Badge (Top Center) */}
@@ -217,7 +217,7 @@ const HeroSection: React.FC = () => {
         </div>
 
         {/* KINETIC VELOCITY TEXT */}
-        <div className="relative mt-4 mb-16 group">
+        <div className="relative mt-4 mb-16 group px-4 md:px-0">
           {/* Ambient Glow behind Velocity */}
           <div className="absolute inset-0 bg-neo-lime/20 blur-[80px] rounded-full mix-blend-screen opacity-0 group-hover:opacity-40 transition-opacity duration-500 scale-150" />
 
@@ -228,7 +228,7 @@ const HeroSection: React.FC = () => {
               </span>
 
               <motion.div
-                className="relative inline-block"
+                className="relative inline-block pr-12 md:pr-16"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
@@ -241,7 +241,7 @@ const HeroSection: React.FC = () => {
 
                 {/* Core Icon */}
                 <motion.div
-                  className="absolute -right-8 -top-8 text-neo-lime"
+                  className="absolute right-0 md:right-2 -top-6 md:-top-8 text-neo-lime"
                   animate={{ rotate: [0, 10, -10, 0] }}
                   transition={{ repeat: Infinity, duration: 4 }}
                 >

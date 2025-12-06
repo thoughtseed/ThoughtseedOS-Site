@@ -54,9 +54,23 @@ function App() {
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = `New Inquiry from ${formState.name} - ${formState.projectType}`;
-    const body = `Name: ${formState.name}%0D%0AEmail: ${formState.email}%0D%0AProject Type: ${formState.projectType}%0D%0A%0D%0AMessage:%0D%0A${formState.message}`;
-    window.location.href = `mailto:wave@thoughtseed.io?subject=${subject}&body=${body}`;
+
+    // Format message for WhatsApp
+    const message = `*New Inquiry*%0A%0A*Name:* ${formState.name}%0A*Email:* ${formState.email}%0A*Project Type:* ${formState.projectType}%0A%0A*Message:*%0A${formState.message}`;
+
+    // WhatsApp URL with phone number (remove + and spaces)
+    const whatsappUrl = `https://wa.me/917358583835?text=${message}`;
+
+    // Open WhatsApp in new tab
+    window.open(whatsappUrl, '_blank');
+
+    // Reset form
+    setFormState({
+      name: '',
+      email: '',
+      projectType: 'Web Development',
+      message: ''
+    });
   };
 
   return (
@@ -126,9 +140,8 @@ function App() {
                     <div className="w-12 h-12 bg-white/10 flex items-center justify-center rounded-full border border-gray-400 dark:border-white/10">
                       <Mail size={20} className="text-neo-cyan" />
                     </div>
-                    <a href="mailto:wave@thoughtseed.io" className="hover:text-neo-lime transition-colors">wave@thoughtseed.io</a>
-                  </div>
-                  <div className="flex gap-4 mt-8">
+                    <a href="mailto:wave@thoughtseed.space" className="hover:text-neo-lime transition-colors">wave@thoughtseed.space</a>
+                  </div>                  <div className="flex gap-4 mt-8">
                     <a href="https://www.instagram.com/thoughtseed.io/" target="_blank" rel="noopener noreferrer" className="w-12 h-12 border border-gray-400 dark:border-white/20 flex items-center justify-center rounded-full hover:bg-neo-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all">
                       <Instagram size={20} />
                     </a>
@@ -206,11 +219,21 @@ function App() {
       <footer className="bg-white/80 dark:bg-black/80 backdrop-blur-xl text-neo-black dark:text-white py-12 border-t border-gray-300 dark:border-white/10 relative z-10">
         <div className="container mx-auto px-4 flex flex-col lg:flex-row justify-between items-start gap-8">
           <div className="text-left max-w-md">
-            <h3 className="text-3xl font-black uppercase mb-4 tracking-tighter">Thoughtseed</h3>
+            <div className="flex items-center gap-3 mb-4">
+              <img src="/assets/screenshots/tslogo.png" alt="Thoughtseed" className="w-10 h-10 object-contain" />
+              <h3 className="text-3xl font-black uppercase tracking-tighter relative">
+                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-neo-lime via-white to-neo-lime animate-strobe">
+                  Thoughtseed
+                </span>
+                <span className="absolute inset-0 text-neo-lime blur-sm animate-strobe-glow" aria-hidden="true">
+                  Thoughtseed
+                </span>
+              </h3>
+            </div>
             <div className="flex items-start gap-2 text-gray-600 dark:text-gray-400 font-mono text-xs leading-relaxed mb-4">
               <MapPin size={16} className="shrink-0 mt-1" />
               <p>
-                WeWork 38/1A, Salarpuria symbiosis, Arekere village, Begur hobli, Bannerghatta Road, Bannerghatta Road, Bangalore, Bangalore South, Karnataka, India, 560076
+                WeWork 38/1A, Salarpuria symbiosis, Arekere village, Bannerghatta Road, Bangalore, Karnataka, India, 560076
               </p>
             </div>
             <p className="font-mono text-gray-500 text-xs">© {new Date().getFullYear()} All Rights Reserved.</p>

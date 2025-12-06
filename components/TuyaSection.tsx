@@ -1,307 +1,321 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Building, 
-  Smartphone, 
-  Cpu, 
-  Shield, 
-  Building2, 
-  Home, 
-  Zap, 
-  ChevronDown
+import React, { useState } from 'react';
+import {
+  Building,
+  Smartphone,
+  Cpu,
+  Building2,
+  Home,
+  Zap,
+  Network,
+  X,
+  ArrowRight
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// --- Data with updated copy ---
+// --- REFIMAGINED DATA (6 Core Services) ---
 const services = [
-  { 
+  {
     id: 'facility',
-    title: "Smart Facility Management", 
-    desc: "Intelligent spaces that run themselves. HVAC, lighting, occupancy – all optimized in real time.", 
-    icon: Building 
+    title: "Smart Facility",
+    desc: "Intelligent spaces that run themselves.",
+    longDesc: "Transform traditional facilities into intelligent ecosystems. Our solutions integrate HVAC, lighting, and occupancy sensors to optimize operations in real-time, reducing overhead and improving occupant comfort effortlessly.",
+    icon: Building,
   },
-  { 
+  {
     id: 'home',
-    title: "Smart Home App", 
-    desc: "One elegant interface to rule every connected device in the home.", 
-    icon: Smartphone 
+    title: "Smart Home App",
+    desc: "One elegant interface for modern living.",
+    longDesc: "A white-label smart home application that puts control in your users' hands. Unified device management, scene automation, and remote access—all wrapped in a premium, intuitive user interface.",
+    icon: Smartphone,
   },
-  { 
+  {
     id: 'ai',
-    title: "AI-Powered Devices", 
-    desc: "Edge AI cameras, toys, and appliances that think locally and act instantly.", 
-    icon: Cpu 
+    title: "AI-Powered",
+    desc: "Edge intelligence that acts instantly.",
+    longDesc: "Leverage edge computing and AI to process data locally. From visual recognition in security cameras to predictive maintenance in appliances, our AI solutions drive faster, smarter decisions without cloud latency.",
+    icon: Cpu,
   },
-  { 
-    id: 'security',
-    title: "Smart Access & Security", 
-    desc: "Biometric entry, proactive monitoring, zero-trust architecture – enterprise-grade, consumer-simple.", 
-    icon: Shield 
-  },
-  { 
+  {
     id: 'building',
-    title: "Smart Building Management", 
-    desc: "Buildings that think ahead. Automated HVAC, lighting, and occupancy for peak efficiency and comfort.", 
-    icon: Building2 
+    title: "Building Mgmt",
+    desc: "Holistic control for complex structures.",
+    longDesc: "Comprehensive BMS integration that scales from single buildings to entire campuses. Monitor energy usage, automate maintenance workflows, and ensure regulatory compliance from a single dashboard.",
+    icon: Building2,
   },
-  { 
+  {
     id: 'rental',
-    title: "Smart Rental Management", 
-    desc: "Frictionless onboarding, remote locks, automated billing – all in one seamless platform.", 
-    icon: Home 
+    title: "Rental Mgmt",
+    desc: "Frictionless onboarding and billing.",
+    longDesc: "Streamline the rental experience with smart access control, automated billing based on usage, and remote property management. Perfect for co-living spaces, short-term rentals, and student housing.",
+    icon: Home,
   },
-  { 
+  {
     id: 'energy',
-    title: "Smart Energy Management", 
-    desc: "Predict consumption, optimize in real time, cut costs dramatically.", 
-    icon: Zap 
-  },
-  {
-    id: 'city',
-    title: "Smart City Solutions",
-    desc: "Integrated urban management for sustainable and efficient cities.",
-    icon: Building2
-  },
-  {
-    id: 'agriculture',
-    title: "Smart Agriculture",
-    desc: "Precision farming and automated systems for optimal crop yield and resource management.",
-    icon: Home
+    title: "Energy Efficiency",
+    desc: "Predict consumption and cut costs.",
+    longDesc: "Advanced energy analytics that don't just track usage but predict it. Implement load balancing, peak shaving, and renewable integration to dramatically lower your carbon footprint and energy bills.",
+    icon: Zap,
   },
 ];
 
-// --- Service Card Component ---
-const ServiceCard: React.FC<{
-  service: typeof services[0];
-}> = ({ service }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+// --- MODAL COMPONENT ---
+const ServiceModal: React.FC<{
+  service: typeof services[0] | null;
+  onClose: () => void;
+}> = ({ service, onClose }) => {
+  if (!service) return null;
   const Icon = service.icon;
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Scroll card into view when expanded on mobile
-  useEffect(() => {
-    if (isExpanded && isMobile && cardRef.current) {
-      const card = cardRef.current;
-      const cardRect = card.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      
-      // Check if expanded card would go below viewport
-      if (cardRect.bottom > viewportHeight - 100) {
-        // Scroll to bring the card into view with some padding
-        card.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center',
-          inline: 'nearest'
-        });
-      }
-    }
-  }, [isExpanded, isMobile]);
-
   return (
-    <div
-      ref={cardRef}
-      className={`
-        group relative cursor-pointer
-        bg-[#0c0c18] border border-white/10 rounded-2xl
-        transition-all duration-300 ease-out
-        hover:border-orange-500/50
-        ${isExpanded ? 'border-orange-500/60' : ''}
-      `}
-      style={{
-        boxShadow: isExpanded 
-          ? '0 0 30px rgba(255,90,0,0.15), 0 8px 32px rgba(0,0,0,0.4)'
-          : '0 4px 20px rgba(0,0,0,0.3)',
-      }}
-      onMouseEnter={() => !isMobile && setIsExpanded(true)}
-      onMouseLeave={() => !isMobile && setIsExpanded(false)}
-      onClick={() => isMobile && setIsExpanded(!isExpanded)}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      onClick={onClose}
     >
-      {/* Orange glow on hover */}
-      <div className={`
-        absolute inset-0 rounded-2xl opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 pointer-events-none
-        bg-[radial-gradient(ellipse_at_center,_rgba(255,90,0,0.08)_0%,_transparent_70%)]
-      `} />
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-lg bg-[#0a0a0a] border border-[#FF4211]/30 rounded-2xl p-8 overflow-hidden shadow-[0_0_50px_rgba(255,66,17,0.15)]"
+      >
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors"
+        >
+          <X size={20} />
+        </button>
 
-      {/* Main Content */}
-      <div className="relative z-10 p-5 flex items-center gap-4">
-        {/* Icon */}
-        <div className={`
-          flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center
-          transition-all duration-300
-          ${isExpanded 
-            ? 'bg-gradient-to-br from-orange-500 to-red-600 text-white' 
-            : 'bg-white/5 text-orange-500 lg:group-hover:bg-orange-500/10'
-          }
-        `}>
-          <Icon size={22} strokeWidth={1.5} />
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-14 h-14 rounded-xl bg-[#FF4211]/10 flex items-center justify-center border border-[#FF4211]/20 shadow-[0_0_20px_rgba(255,66,17,0.2)]">
+            <Icon size={32} className="text-[#FF4211]" />
+          </div>
+          <h3 className="text-2xl font-display font-bold text-white uppercase">{service.title}</h3>
         </div>
 
-        {/* Title */}
-        <div className="flex-1 min-w-0">
-          <h3 className="text-white font-display font-bold text-sm sm:text-base uppercase tracking-wide">
-            {service.title}
-          </h3>
-          {!isExpanded && (
-            <div className="mt-1.5 h-0.5 w-8 bg-gradient-to-r from-orange-500/50 to-transparent rounded-full 
-                          lg:group-hover:w-16 transition-all duration-300" />
-          )}
-        </div>
+        {/* Content */}
+        <p className="text-gray-300 font-mono text-sm leading-relaxed mb-8 border-l-2 border-[#FF4211]/50 pl-4">
+          {service.longDesc}
+        </p>
 
-        {/* Chevron */}
-        <ChevronDown 
-          size={18} 
-          className={`
-            text-gray-500 transition-transform duration-300 flex-shrink-0
-            ${isExpanded ? 'rotate-180 text-orange-500' : 'lg:group-hover:text-orange-400'}
-          `}
-        />
-      </div>
+        {/* CTA */}
+        <button
+          onClick={onClose}
+          className="w-full py-4 bg-[#FF4211] text-white font-bold uppercase tracking-widest hover:bg-[#ff5e33] transition-colors rounded-lg flex items-center justify-center gap-2 group"
+        >
+          Close Details <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+        </button>
 
-      {/* Expandable Description */}
-      <div className={`
-        overflow-hidden transition-all duration-300
-        ${isExpanded ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'}
-      `}>
-        <div className="px-5 pb-5">
-          <div className="h-px bg-gradient-to-r from-transparent via-orange-500/30 to-transparent mb-3" />
-          <p className="text-gray-400 font-mono text-xs sm:text-sm leading-relaxed">
-            {service.desc}
-          </p>
-        </div>
-      </div>
-    </div>
+        {/* Background Decor */}
+        <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#FF4211]/5 rounded-full blur-3xl pointer-events-none" />
+      </motion.div>
+    </motion.div>
   );
 };
 
-// --- Main Component ---
 const TuyaSection: React.FC = () => {
-  // Each card now manages its own expanded state
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [selectedService, setSelectedService] = useState<typeof services[0] | null>(null);
+
+  // Orbit Configuration
+  const radius = 380; // Distance from center
+  const total = services.length;
 
   return (
-    <section className="relative w-full bg-[#030014] overflow-hidden py-16 sm:py-20 lg:py-28">
-      {/* Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#030014] via-[#080518] to-[#030014]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,90,0,0.05)_0%,_transparent_50%)]" />
-        
-        {/* Subtle particles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(30)].map((_, i) => (
-            <div
+    <section className="relative w-full min-h-screen bg-[#050510] overflow-hidden py-24 flex flex-col items-center justify-center">
+
+      {/* 1. KINETIC PARTICLE BACKGROUND (No Grid) */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,66,17,0.08)_0%,_transparent_70%)]" />
+
+        {/* Deep Space Particles */}
+        <div className="absolute inset-0">
+          {[...Array(40)].map((_, i) => (
+            <motion.div
               key={i}
-              className="absolute w-1 h-1 bg-white/10 rounded-full"
+              className="absolute rounded-full bg-white/20"
               style={{
-                left: `${(i * 37) % 100}%`,
-                top: `${(i * 23) % 100}%`,
-                animation: `pulse ${3 + (i % 3)}s ease-in-out infinite`,
-                animationDelay: `${i * 0.2}s`,
+                width: Math.random() * 2 + 1 + 'px',
+                height: Math.random() * 2 + 1 + 'px',
+                top: Math.random() * 100 + '%',
+                left: Math.random() * 100 + '%',
+              }}
+              animate={{
+                opacity: [0.2, 0.8, 0.2],
+                scale: [1, 1.5, 1]
+              }}
+              transition={{
+                duration: Math.random() * 3 + 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: Math.random() * 5
+              }}
+            />
+          ))}
+          {/* Orange Accent Particles */}
+          {[...Array(15)].map((_, i) => (
+            <motion.div
+              key={`orange-${i}`}
+              className="absolute w-1 h-1 bg-[#FF4211]/40 rounded-full"
+              initial={{
+                x: Math.random() * 1000 - 500,
+                y: Math.random() * 1000 - 500
+              }}
+              animate={{
+                y: [0, -100],
+                opacity: [0, 1, 0]
+              }}
+              transition={{
+                duration: Math.random() * 5 + 5,
+                repeat: Infinity,
+                ease: "linear",
+                delay: Math.random() * 5
               }}
             />
           ))}
         </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Header */}
-        <div className="text-center mb-12 lg:mb-16">
-          <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 px-4 py-1.5 rounded-full mb-6">
-            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-            <span className="text-xs font-mono text-orange-400 uppercase tracking-wider">
-              Official Development Partner
-            </span>
-          </div>
-          
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-display font-bold text-white leading-tight max-w-4xl mx-auto mb-4">
-            Powered by the{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">
-              Tuya IoT
-            </span>{' '}
-            ecosystem + our{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-              AI expertise
-            </span>
-            , we deliver enterprise-grade smart solutions.
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 flex flex-col items-center">
+
+        {/* HEADER */}
+        <div className="text-center mb-12 relative z-20">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 mb-4"
+          >
+            <div className="h-[1px] w-12 bg-[#FF4211]/50" />
+            <span className="text-[#FF4211] font-mono text-xs uppercase tracking-[0.3em]">tuya ecosystem dev partner</span>
+            <div className="h-[1px] w-12 bg-[#FF4211]/50" />
+          </motion.div>
+          <h2 className="text-3xl md:text-5xl font-rajdhani font-bold text-white uppercase tracking-tight max-w-4xl mx-auto leading-tight relative group">
+            <span className="relative z-10">We provide end-to-end IoT solutions built on the Tuya ecosystem</span>
+            <span className="absolute top-0 left-0 -z-10 text-[#FF4211] opacity-0 group-hover:opacity-70 group-hover:translate-x-[2px] transition-all duration-100" aria-hidden="true">We provide end-to-end IoT solutions built on the Tuya ecosystem</span>
+            <span className="absolute top-0 left-0 -z-10 text-neo-cyan opacity-0 group-hover:opacity-70 group-hover:-translate-x-[2px] transition-all duration-100" aria-hidden="true">We provide end-to-end IoT solutions built on the Tuya ecosystem</span>
           </h2>
-          
-          <p className="text-gray-400 font-mono text-sm lg:text-base max-w-2xl mx-auto">
-            From single homes to entire buildings—scaling effortlessly.
-          </p>
         </div>
 
-        {/* Desktop Layout: 3x3 Grid with Hub in Center */}
-        <div className="hidden lg:block">
-          {/* Hub positioned above the grid */}
-          <div className="flex items-center justify-center mb-12">
-            <div className="relative">
-              {/* Glow */}
-              <div className="absolute inset-0 w-40 h-40 -m-4 rounded-full bg-orange-500/20 blur-3xl" />
-              
-              {/* Rings */}
-              <div className="absolute inset-0 w-36 h-36 -m-2 rounded-full border border-dashed border-orange-500/30 animate-[spin_20s_linear_infinite]" />
-              <div className="absolute inset-0 w-44 h-44 -m-6 rounded-full border border-orange-500/15 animate-[spin_30s_linear_infinite_reverse]" />
-              
-              {/* Core */}
-              <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-orange-500 via-red-500 to-orange-600 
-                             flex items-center justify-center shadow-[0_0_60px_rgba(255,90,0,0.5)]">
-                <img 
-                  src="https://s3-symbol-logo.tradingview.com/tuya--600.png" 
-                  alt="Tuya - Official Partner" 
-                  className="w-16 h-16 object-contain brightness-150 drop-shadow-lg"
+        {/* ORBITAL LAYOUT CONTAINER (Desktop) */}
+        <div className="hidden lg:flex relative w-[800px] h-[800px] items-center justify-center">
+
+          {/* ORBIT RINGS */}
+          <div className="absolute inset-0 rounded-full border border-white/5 animate-[spin_60s_linear_infinite]" />
+          <div className="absolute inset-[100px] rounded-full border border-white/5 border-dashed animate-[spin_40s_linear_infinite_reverse]" />
+          <div className="absolute inset-[250px] rounded-full border border-[#FF4211]/10 animate-[pulse_4s_ease-in-out_infinite]" />
+
+          {/* CENTRAL TUYA CORE */}
+          <div className="absolute flex items-center justify-center z-10">
+            <div className="relative w-40 h-40 flex items-center justify-center">
+              {/* Glows */}
+              <div className="absolute inset-0 bg-[#FF4211]/30 blur-[40px] rounded-full animate-pulse" />
+              <div className="absolute inset-0 bg-[#FF4211] rounded-full opacity-10" />
+              <div className="absolute inset-2 bg-[#FF4211] rounded-full border border-[#FF4211]/50 flex items-center justify-center z-20 shadow-[0_0_30px_rgba(255,66,17,0.4)]">
+                <img
+                  src="/assets/screenshots/TUYA_BIG.svg"
+                  alt="Tuya"
+                  className="w-20 h-20 object-contain brightness-[100] drop-shadow-md"
                 />
-                <div className="absolute inset-2 rounded-full bg-gradient-to-t from-transparent to-white/10" />
               </div>
+              {/* Connecting Lines to Orbit */}
+              {[...Array(6)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute top-1/2 left-1/2 h-[1px] w-[380px] bg-gradient-to-r from-[#FF4211]/30 to-transparent origin-left -z-10"
+                  style={{ transform: `rotate(${i * 60}deg)` }}
+                />
+              ))}
             </div>
           </div>
 
-          {/* 3x3 Grid of Cards */}
-          <div className="grid grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {services.map((service) => (
-              <ServiceCard
+          {/* ORBITING CARDS */}
+          {services.map((service, index) => {
+            // Rotate starting angle by 30 degrees (Math.PI / 6) to move "Smart Facility" from top-center to top-right/lower
+            const angle = (index / total) * 2 * Math.PI - (Math.PI / 2) + (Math.PI / 6);
+            const x = radius * Math.cos(angle);
+            const y = radius * Math.sin(angle);
+
+            return (
+              <motion.div
                 key={service.id}
-                service={service}
-              />
-            ))}
-          </div>
+                className="absolute w-64"
+                style={{
+                  left: '50%',
+                  top: '50%',
+                  marginLeft: -128, // Half width
+                  marginTop: -70, // Half height approx
+                  x,
+                  y
+                }}
+                initial={{ opacity: 0, scale: 0 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
+              >
+                <div
+                  className="group relative bg-[#0a0a12]/80 backdrop-blur-md border border-white/10 rounded-xl p-5 hover:border-[#FF4211]/50 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,66,17,0.2)] cursor-pointer"
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                  onClick={() => setSelectedService(service)}
+                >
+                  <div className="absolute inset-0 bg-[#FF4211] opacity-0 group-hover:opacity-5 rounded-xl transition-opacity" />
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-[#FF4211]/10 border border-[#FF4211]/20 flex items-center justify-center shadow-[0_0_15px_rgba(255,66,17,0.15)] shrink-0 group-hover:shadow-[0_0_20px_rgba(255,66,17,0.4)] transition-all duration-300">
+                      <service.icon size={20} className="text-[#FF4211] drop-shadow-[0_0_8px_rgba(255,66,17,0.8)]" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-bold text-sm uppercase mb-1">{service.title}</h3>
+                      <p className="text-gray-400 text-xs leading-tight group-hover:text-gray-300 transition-colors">{service.desc}</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
-        {/* Mobile/Tablet Layout */}
-        <div className="lg:hidden">
-          {/* Mobile Hub */}
-          <div className="flex items-center justify-center mb-10">
-            <div className="relative">
-              <div className="absolute inset-0 w-28 h-28 -m-4 rounded-full bg-orange-500/20 blur-2xl" />
-              <div className="absolute inset-0 w-24 h-24 -m-2 rounded-full border border-dashed border-orange-500/30 animate-[spin_20s_linear_infinite]" />
-              
-              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 via-red-500 to-orange-600 
-                             flex items-center justify-center shadow-[0_0_40px_rgba(255,90,0,0.5)]">
-                <img 
-                  src="https://s3-symbol-logo.tradingview.com/tuya--600.png" 
-                  alt="Tuya" 
-                  className="w-10 h-10 object-contain brightness-150"
-                />
-              </div>
+        {/* MOBILE LAYOUT (Stack) */}
+        <div className="lg:hidden flex flex-col gap-4 w-full max-w-md">
+          {/* Mobile Central Node */}
+          <div className="flex justify-center mb-8">
+            <div className="relative w-24 h-24 flex items-center justify-center bg-[#FF4211] rounded-full border border-[#FF4211]/30 shadow-[0_0_40px_rgba(255,66,17,0.4)]">
+              <img src="/assets/screenshots/TUYA_BIG.svg" alt="Tuya" className="w-12 h-12 object-contain brightness-[100]" />
             </div>
           </div>
 
-          {/* Mobile Services */}
-          <div className="flex flex-col gap-3 max-w-lg mx-auto">
-            {services.map((service) => (
-              <ServiceCard
-                key={service.id}
-                service={service}
-              />
-            ))}
-          </div>
+          {services.map((service, index) => (
+            <div key={service.id} className="relative pl-8 border-l border-white/10 ml-4 py-2">
+              {/* Timeline Dot */}
+              <div className="absolute -left-[5px] top-6 w-2.5 h-2.5 rounded-full bg-[#FF4211] shadow-[0_0_10px_rgba(255,66,17,0.8)]" />
+
+              <div
+                onClick={() => setSelectedService(service)}
+                className="bg-white/5 border border-white/5 rounded-xl p-4 flex items-center gap-4 active:scale-95 transition-transform"
+              >
+                <div className="w-10 h-10 rounded-lg bg-[#FF4211]/10 border border-[#FF4211]/20 flex items-center justify-center shadow-[0_0_15px_rgba(255,66,17,0.15)] shrink-0">
+                  <service.icon size={20} className="text-[#FF4211]" />
+                </div>
+                <div>
+                  <h3 className="text-white font-bold text-sm uppercase">{service.title}</h3>
+                  <p className="text-gray-400 text-xs">{service.desc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
       </div>
+
+      {/* DETAIL MODAL */}
+      <AnimatePresence>
+        {selectedService && (
+          <ServiceModal service={selectedService} onClose={() => setSelectedService(null)} />
+        )}
+      </AnimatePresence>
     </section>
   );
 };
