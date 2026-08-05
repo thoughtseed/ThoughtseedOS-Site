@@ -1,0 +1,5 @@
+# Cloudflare Pages project for Thoughtseed main site (Digital Wilderness)
+# Deploy: npm run build && npx wrangler pages deploy dist --project-name=thoughtseed-os-site --branch=main
+name = "thoughtseed-os-site"
+compatibility_date = "2026-08-05"
+pages_build_output_dir = "dist"
