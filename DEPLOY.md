@@ -28,3 +28,23 @@ This surface is the **first public canary** for skill-clusters website delivery 
 1. Change content → push `main` → Pages deploy green  
 2. `curl -s https://thoughtseed.space/ \| grep Digital`  
 3. Later: quest/Hermes job asserts HTTP 200 + title without human click
+
+## Public site canary
+
+```bash
+bash scripts/canary-public-site.sh
+```
+
+| Check | Expect |
+| --- | --- |
+| HTTP | 200 on apex, www, pages.dev |
+| Title | contains `Digital Wilderness` |
+| Reject | `Founder-Led Systems Studio` (wrong origin / redesign) |
+| Reject | Error 1000 / prohibited IP |
+
+Automation:
+
+- GitHub Actions: `.github/workflows/canary-public-site.yml` (every 6h UTC + after successful deploy + `workflow_dispatch`)
+- Hermes: `hermes-aws-ts/ops/hermes/canary-public-site.sh` (same contract; wire when ready)
+
+Work object: `program:company-website`

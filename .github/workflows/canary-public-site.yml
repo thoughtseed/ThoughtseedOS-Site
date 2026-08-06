@@ -1,0 +1,34 @@
+# Outcome canary: public main site must be Digital Wilderness on apex/www/pages.dev.
+# First non-noise automation for program:company-website / Hermes/quests prep.
+name: Canary public site
+
+on:
+  schedule:
+    # Every 6 hours UTC — low noise, still catches multi-hour outages
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+  # Also run after successful deploys land (optional chain)
+  workflow_run:
+    workflows: ["Deploy Cloudflare Pages"]
+    types: [completed]
+
+concurrency:
+  group: canary-thoughtseed-public-site
+  cancel-in-progress: true
+
+jobs:
+  canary:
+    # Only run post-deploy canary if the deploy workflow succeeded
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run public site canary
+        run: bash scripts/canary-public-site.sh
